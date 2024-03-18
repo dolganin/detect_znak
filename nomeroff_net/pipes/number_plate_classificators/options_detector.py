@@ -366,27 +366,14 @@ class OptionsDetector(object):
         self.__dict__.update(options)
 
         if path_to_model == "latest":
-#             model_info = modelhub.download_model_by_name("numberplate_options")
-#             path_to_model = model_info["path"]
             self.class_region = ['military', 'eu-ua-2015', 'eu-ua-2004', 'eu-ua-1995', 'eu', 'xx-transit', 'ru', 'kz', 'eu-ua-ordlo-dpr', 'eu-ua-ordlo-lpr', 'ge', 'by', 'su', 'kg', 'am', 'md', 'eu-ua-custom']
-#             print(self.class_region)
+
             self.count_lines = [1, 2, 3]
-#             print(self.count_lines)
+
             self.height = 100
-#             print(self.height)
+
             self.width = 400
-#             print(self.width)
-#         elif path_to_model.startswith("http"):
-#             model_info = modelhub.download_model_by_url(path_to_model, self.get_classname(), "numberplate_options")
-#             path_to_model = model_info["path"]
-#         elif path_to_model.startswith("modelhub://"):
-#             path_to_model = path_to_model.split("modelhub://")[1]
-#             model_info = modelhub.download_model_by_name(path_to_model)
-#             path_to_model = model_info["path"]
-#             self.class_region = model_info["class_region"]
-#             self.count_lines = model_info["count_lines"]
-#             self.height = model_info.get("height", self.height)
-#             self.width = model_info.get("width", self.width)
+
         return path_to_model
 
     def load(self, path_to_model: str = "latest", options: Dict = None) -> NPOptionsNet:

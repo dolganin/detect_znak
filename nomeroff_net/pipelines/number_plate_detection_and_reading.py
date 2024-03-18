@@ -117,14 +117,28 @@ class NumberPlateDetectionAndReading(Pipeline, CompositePipeline):
         images_bboxs, images = unzip(self.number_plate_localization(inputs, **forward_parameters))
         images_points, images_mline_boxes = unzip(self.number_plate_key_points_detection(unzip([images, images_bboxs]),
                                                                                          **forward_parameters))
-#     если не нашел craft то подаем bbox от yolow ПЕРЕДЕЛАТЬ ЛОГИКУ
 
-      if len(ima) 
+        #     done
+        images_points = list(images_points)
+        for i, sublist in enumerate(images_bboxs):
+            if not images_points[i]:
+                images_points[i] = sublist
+        images_points = tuple(images_points)
+        
+        
+        
+        if len(images_points[0]):
+            zones, image_ids = crop_number_plate_rect_zones_from_images(images, images_bboxs)
+        else:
+            zones, image_ids = crop_number_plate_rect_zones_from_images(images, images_bboxs)
+        
         """  if len(images_points[0]):
             zones, image_ids = crop_number_plate_zones_from_images(images, images_points)
         else:
             zones, image_ids = crop_number_plate_rect_zones_from_images(images, images_bboxs)
-        """       
+        """
+        
+        
         if self.number_plate_classification is None or not len(zones):
             region_ids = [-1 for _ in zones]
             region_names = [self.default_label for _ in zones]

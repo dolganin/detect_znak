@@ -42,9 +42,6 @@ from nomeroff_net.pipes.number_plate_classificators.options_detector import Opti
 from nomeroff_net.tools.mcm import get_device_torch
 
 import torch
-# np_options_net = NPOptionsNet(13, 3)
-# device = get_device_torch()
-# net = np_options_net.to(device)
 path_to_model = './data/models/OptionsDetector/numberplate_options/numberplate_options_2023_11_20__400x100_pytorch_lightning.ckpt'
 np_options_net = NPOptionsNet.load_from_checkpoint(path_to_model,
                                                        map_location=torch.device('cpu'),
@@ -56,9 +53,7 @@ np_options_net = NPOptionsNet.load_from_checkpoint(path_to_model,
                                                        train_regions=True,
                                                        train_count_lines=True)
 xs = torch.rand((1, 3, 100, 400), requires_grad=False)
-# y = model(xs)
-# y = OptionsDetector.unzip_predicted(y[0].detach().numpy())
-# np_options_net = NPOptionsNet(13, 3)
+
 device = 'cuda:0'
 net = np_options_net
 xs = torch.rand((1, 3, 100, 400))
@@ -74,6 +69,3 @@ torch.onnx.export(net,               # model being run
                   input_names = ['input'],   # the model's input names
                   output_names = ['output1'], # the model's output names
                   dynamic_axes=dynamic_axes)
-
-
-
