@@ -10,7 +10,7 @@ from pytorch_lightning.tuner.tuning import Tuner
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks import LearningRateMonitor
 
-from nomeroff_net.tools.mcm import (modelhub, get_device_torch)
+from nomeroff_net.tools.mcm import (get_device_torch)
 from nomeroff_net.data_modules.numberplate_options_data_module import OptionsNetDataModule
 from nomeroff_net.nnmodels.numberplate_options_model import NPOptionsNet
 from nomeroff_net.tools.image_processing import normalize_img, convert_cv_zones_rgb_to_bgr
