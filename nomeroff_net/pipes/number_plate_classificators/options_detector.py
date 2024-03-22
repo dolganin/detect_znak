@@ -17,26 +17,25 @@ from nomeroff_net.tools.image_processing import normalize_img, convert_cv_zones_
 
 device_torch = get_device_torch()
 
-CLASS_REGION_ALL = [
-    "xx-unknown",
-    "eu-ua-2015",
-    "eu-ua-2004",
-    "eu-ua-1995",
-    "eu",
-    "xx-transit",
-    "ru",
-    "kz",
-    "eu-ua-ordlo-dpr",
-    "eu-ua-ordlo-lpr",
-    "ge",
-    "by",
-    "su",
-    "kg",
-    "am",
-    "ua-military",
-    "ru-military",
-    "md",
-    "eu-ua-custom",
+CLASS_REGION_3 = ['kz', 'ru', 'by']
+
+CLASS_REGION_ALL = ['military',
+                    'eu-ua-2015',
+                    'eu-ua-2004',
+                    'eu-ua-1995',
+                    'eu',
+                    'xx-transit',
+                    'ru',
+                    'kz',
+                    'eu-ua-ordlo-dpr',
+                    'eu-ua-ordlo-lpr',
+                    'ge',
+                    'by',
+                    'su',
+                    'kg',
+                    'am',
+                    'md',
+                    'eu-ua-custom'
 ]
 
 CLASS_LINES_ALL = [
@@ -78,8 +77,8 @@ class OptionsDetector(object):
             options = dict()
 
         # input
-        self.height = 50
-        self.width = 200
+        self.height = 200
+        self.width = 600
         self.color_channels = 3
 
         # outputs 1
@@ -96,9 +95,9 @@ class OptionsDetector(object):
         self.dm = None
 
         # train hyperparameters
-        self.batch_size = 64
+        self.batch_size = 128
         self.epochs = 100
-        self.gpus = 0
+        self.gpus = 1
         self.train_regions = True
         self.train_count_lines = True
 
@@ -234,7 +233,7 @@ class OptionsDetector(object):
         """
         TODO: describe method
         """
-        return self.trainer.test()
+        return self.trainer.test(datamodule=self.dm)
 
     def save(self, path: str, verbose: bool = True) -> None:
         """
@@ -366,7 +365,7 @@ class OptionsDetector(object):
         self.__dict__.update(options)
 
         if path_to_model == "latest":
-            self.class_region = ['military', 'eu-ua-2015', 'eu-ua-2004', 'eu-ua-1995', 'eu', 'xx-transit', 'ru', 'kz', 'eu-ua-ordlo-dpr', 'eu-ua-ordlo-lpr', 'ge', 'by', 'su', 'kg', 'am', 'md', 'eu-ua-custom']
+            self.class_region = CLASS_REGION_3
 
             self.count_lines = [1, 2, 3]
 
