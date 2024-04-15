@@ -16,7 +16,7 @@ from detect_znak.pipelines.base import Pipeline, CompositePipeline, empty_method
 from .number_plate_localization import NumberPlateLocalization as DefaultNumberPlateLocalization
 from .number_plate_key_points_detection import NumberPlateKeyPointsDetection
 from .number_plate_text_reading import NumberPlateTextReading
-from.number_plate_classification import NumberPlateClassification
+from .number_plate_classification import NumberPlateClassification
 from detect_znak.tools.image_processing import crop_number_plate_zones_from_images, group_by_image_ids
 from detect_znak.tools import unzip
 
@@ -103,14 +103,9 @@ class NumberPlateDetectionAndReading(Pipeline, CompositePipeline):
         CompositePipeline.__init__(self, self.pipelines)
 
     def __call__(self, images: Any, **kwargs):
-        print(images.shape)
         return super().__call__(images, **kwargs)
 
     def preprocess(self, inputs: Any, **preprocess_parameters: Dict) -> Any:
-
-#         if isinstance(inputs[0], np.ndarray):
-#             images = [item for item in inputs]
-#         else:
         images = [self.image_loader.load(item) for item in inputs]
         return images
 
@@ -144,15 +139,16 @@ class NumberPlateDetectionAndReading(Pipeline, CompositePipeline):
                                                   region_names,
                                                   count_lines, preprocessed_np]), **forward_parameters))
         if len(number_plate_text_reading_res):
-            texts, _ = number_plate_text_reading_res
+            texts, _, conf = number_plate_text_reading_res
         else:
+            conf = []
             texts = []
-        (region_ids, region_names, count_lines, confidences, texts, zones) = \
-            group_by_image_ids(image_ids, (region_ids, region_names, count_lines, confidences, texts, zones))
+        (region_ids, region_names, count_lines, confidences, texts, zones, conf) = \
+            group_by_image_ids(image_ids, (region_ids, region_names, count_lines, confidences, texts, zones, conf))
         return unzip([images, images_bboxs,
                       images_points, zones,
                       region_ids, region_names,
-                      count_lines, confidences, texts])
+                      count_lines, confidences, texts, conf])
 
     def forward(self, inputs: Any, **forward_parameters: Dict) -> Any:
         """

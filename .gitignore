@@ -1,0 +1,10 @@
+config.py
+data/
+metrics/
+old_install.txt
+metrics_graphics.ipynb
+__pycache__
+.gitignore
+.ipynb_checkpoints
+.readthedocs.yml
+

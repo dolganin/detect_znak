@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional, Union
 from detect_znak.image_loaders import BaseImageLoader
 from detect_znak.pipelines.base import Pipeline
 from detect_znak.tools import unzip
-#from detect_znak.pipes.number_plate_localizators.yolo_v5_detector import Detector
 from detect_znak.pipes.number_plate_localizators.yolo_v8_detector import Detector
 
 

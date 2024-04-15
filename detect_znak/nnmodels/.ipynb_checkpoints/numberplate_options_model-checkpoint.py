@@ -6,12 +6,16 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 from .numberplate_classification_model import ClassificationNet
-from torchvision.models import efficientnet_v2_s
+import torchvision.models as models
 from detect_znak.tools.errors import NPOptionsNetError
 import contextlib
 from detect_znak.tools.mcm import get_device_torch
 
-
+BACKBONES = {'efficientnet': models.efficientnet_v2_s,
+             'resnet': models.resnet18,
+             'vit': models.vit_b_16,
+             'resnext': models.resnext101_32x8d,
+             'mobilenet': models.mobilenet_v3_large}
 @contextlib.contextmanager
 def dummy_context_mgr():
     yield None
@@ -42,13 +46,26 @@ class NPOptionsNet(ClassificationNet):
         
         self.train_regions = train_regions
         self.train_count_lines = train_count_lines
-
+        # CHANGE LOGIC
         if backbone is None:
-            backbone = efficientnet_v2_s
-        self.model = backbone()
-
+            backbone = models.efficientnet_v2_s
+        else:
+            backbone = BACKBONES[backbone]
+            
+        
+#         print(self.model)
         if 'efficientnet' in str(backbone):
+            self.model = backbone(weights="IMAGENET1K_V1")
             in_features = self.model.classifier[1].in_features
+        elif 'resnet' in str(backbone) or 'resnext' in str(backbone):
+            self.model = backbone(weights="IMAGENET1K_V1")
+            in_features = self.model.fc.in_features
+        elif 'vit' in str(backbone):
+            self.model = backbone(weights="IMAGENET1K_V1")
+            in_features = self.model.heads.head.in_features
+        elif 'mobilenet' in str(backbone):
+            self.model = backbone(weights="DEFAULT")
+            in_features = self.model.classifier[0].in_features
         else:
             raise NotImplementedError(backbone)
 
@@ -70,23 +87,29 @@ class NPOptionsNet(ClassificationNet):
         if not self.train_count_lines:
             for name, param in linear_line.named_parameters():
                 param.requires_grad = False
-        if 'efficientnet' in str(backbone):
+        if 'efficientnet' in str(backbone) or 'mobilenet' in str(backbone):
             self.model.classifier = DoubleLinear(linear_region, linear_line)
+        elif 'resnet' in str(backbone):
+            self.model.fc = DoubleLinear(linear_region, linear_line)
+        elif 'vit' in str(backbone):
+            self.model.heads.head = DoubleLinear(linear_region, linear_line)
+        elif 'resnext' in str(backbone):
+            self.model.fc = DoubleLinear(linear_region, linear_line)
         else:
             raise NotImplementedError(backbone)
 
     def training_step(self, batch, batch_idx):
         loss, acc, acc_reg, acc_line = self.step(batch)
-        self.log('loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log(f'train_accuracy', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_acc_reg', acc_reg, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log(f'train_acc_line', acc_line, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+#         self.log('loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+#         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+#         self.log(f'train_accuracy', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+#         self.log('train_acc_reg', acc_reg, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+#         self.log(f'train_acc_line', acc_line, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         tqdm_dict = {
-            'train_loss': loss,
-            'acc': acc,
-            'acc_reg': acc_reg,
-            'acc_line': acc_line,
+#             'train_loss': loss,
+#             'acc': acc,
+#             'acc_reg': acc_reg,
+#             'acc_line': acc_line,
         }
         return {
             'loss': loss,

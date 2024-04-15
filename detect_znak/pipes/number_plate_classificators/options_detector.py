@@ -53,6 +53,7 @@ CLASS_STATE_ALL = [
     "empty"  # deprecated
 ]
 
+BACKBONE = 'resnet'
 
 def imshow(img: np.ndarray) -> None:
     """
@@ -78,8 +79,8 @@ class OptionsDetector(object):
             options = dict()
 
         # input
-        self.height = 50
-        self.width = 200
+        self.height = 100
+        self.width = 400
         self.color_channels = 3
 
         # outputs 1
@@ -87,6 +88,10 @@ class OptionsDetector(object):
 
         # outputs 2
         self.count_lines = options.get("count_lines", CLASS_LINES_ALL)
+        
+        self.backbone = options.get("backbone", BACKBONE)
+        
+        self.model_format = options.get("model_format", "onnx")
 
         # model
         self.model = None
@@ -96,9 +101,9 @@ class OptionsDetector(object):
         self.dm = None
 
         # train hyperparameters
-        self.batch_size = 64
-        self.epochs = 100
-        self.gpus = 0
+        self.batch_size = 256
+        self.epochs = 50
+        self.gpus = 1
         self.train_regions = True
         self.train_count_lines = True
 
@@ -145,7 +150,8 @@ class OptionsDetector(object):
                                       len(self.count_lines),
                                       batch_size=self.batch_size,
                                       train_regions=self.train_regions,
-                                      train_count_lines=self.train_count_lines, )
+                                      train_count_lines=self.train_count_lines, 
+                                      backbone = self.backbone)
             self.model = self.model.to(device_torch)
         return self.model
 
@@ -234,7 +240,7 @@ class OptionsDetector(object):
         """
         TODO: describe method
         """
-        return self.trainer.test()
+        return self.trainer.test(dataloaders=self.dm)
 
     def save(self, path: str, verbose: bool = True) -> None:
         """
@@ -257,20 +263,25 @@ class OptionsDetector(object):
         return True
 
     def load_model(self, path_to_model):
-#         self.model = NPOptionsNet.load_from_checkpoint(path_to_model,
-#                                                        map_location=torch.device('cpu'),
-# region _output_size=len(self.class_region),
-#                                                        count_line_output_size=len(self.count_lines),
-#                                                        img_h=self.height,
-#                                                        img_w=self.width,
-#                                                        batch_size=self.batch_size,
-#                                                        train_regions=self.train_regions,
-#                                                        train_count_lines=self.train_count_lines, )
-#         self.model = self.model.to(device_torch)
-#         self.model.eval()
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        classificator_dir = os.path.join(current_dir, "../../../data/models/OptionsDetector/numberplate_options/classifier.onnx")
-        self.model = onnxruntime.InferenceSession(classificator_dir, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
+        if self.model_format == 'torch':
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            path_to_model = os.path.join(current_dir, "../../../data/models/OptionsDetector/numberplate_options/cls.pth")
+            self.model = NPOptionsNet.load_from_checkpoint(path_to_model,
+                                                           map_location=torch.device('cpu'),
+                                                           region_output_size=2, #len(self.class_region),
+                                                           count_line_output_size=len(self.count_lines),
+                                                           img_h=self.height,
+                                                           img_w=self.width,
+                                                           batch_size=self.batch_size,
+                                                           train_regions=self.train_regions,
+                                                           train_count_lines=self.train_count_lines, 
+                                                           )
+            self.model = self.model.to(device_torch)
+            self.model.eval()
+        if self.model_format == 'onnx':
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            classificator_dir = os.path.join(current_dir, "../../../data/models/OptionsDetector/numberplate_options/classifier.onnx")
+            self.model = onnxruntime.InferenceSession(classificator_dir, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
         return self.model
 
     def get_region_label(self, index: int) -> str:
@@ -416,7 +427,14 @@ class OptionsDetector(object):
     @staticmethod
     def unzip_predicted(predicted):
         confidences, region_ids, count_lines = [], [], []
+
+            
         for region, count_line in zip(predicted[0], predicted[1]):
+            try:
+                region = region.cpu().numpy()
+                count_line = count_line.cpu().numpy()
+            except:
+                pass
             region_ids.append(int(np.argmax(region)))
             count_lines.append(int(np.argmax(count_line)))
             region = region.tolist()
@@ -432,12 +450,14 @@ class OptionsDetector(object):
         return x
 
     def forward(self, inputs):
-#         x = torch.tensor(inputs)
-#         x = x.to(device_torch)
-#         model_output = self.model(x)
-        x = np.array(inputs)
-        ort_inputs = {self.model.get_inputs()[0].name: x}
-        model_output = self.model.run(None, ort_inputs)
+        if self.model_format == 'torch':
+            x = torch.tensor(inputs)
+            x = x.to(device_torch)
+            model_output = self.model(x)
+        if self.model_format == 'onnx':
+            x = np.array(inputs)
+            ort_inputs = {self.model.get_inputs()[0].name: x}
+            model_output = self.model.run(None, ort_inputs)
         return model_output
 
     @torch.no_grad()

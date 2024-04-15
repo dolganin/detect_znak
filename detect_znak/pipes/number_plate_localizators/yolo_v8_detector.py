@@ -30,7 +30,7 @@ class Detector(YoloDetector):
         # model = torch.hub.load(repo_path, 'custom', path=weights, source="local")
         current_dir = os.path.dirname(os.path.abspath(__file__))
         yolo_dir = os.path.join(current_dir, "../../../data/models/Detector/yolov8/yolov8s-2023-02-11.onnx")
-        model = YOLO(yolo_dir)
+        model = YOLO(yolo_dir, task='detect')
 #         model = YOLO('/workspace/nomerov/nomeroff-net/data/models/Detector/yolov8/yolov8s-2023-02-11.onnx', task='detect')
 #         model.to(device)
         # if device != 'cpu':  # half precision only supported on CUDA
@@ -64,14 +64,18 @@ class Detector(YoloDetector):
     @staticmethod
     def convert_model_output_to_array(result):
         model_output = []
+        if result.boxes.id == None:
+            id = result.boxes.cls.cpu().numpy()
+        else:
+            id = result.boxes.id.cpu().numpy()
         for item, cls, conf in zip(result.boxes.xyxy.cpu().numpy(),
-                                   result.boxes.cls.cpu().numpy(),
+                                   id,
                                    result.boxes.conf.cpu().numpy()):
             model_output.append([item[0], item[1], item[2], item[3], conf, int(cls)])
         return model_output
 
     @torch.no_grad()
     def predict(self, imgs: List[np.ndarray], min_accuracy: float = 0.4) -> np.ndarray:
-        model_outputs = self.model(imgs, conf=min_accuracy, verbose=False, save=False, save_txt=False, show=False, device='cpu')
+        model_outputs = self.model.track(imgs, conf=min_accuracy, verbose=False, save=False, save_txt=False, show=False, device='cpu', persist=True, tracker="bytetrack.yaml")
         result = self.convert_model_outputs_to_array(model_outputs)
         return np.array(result)

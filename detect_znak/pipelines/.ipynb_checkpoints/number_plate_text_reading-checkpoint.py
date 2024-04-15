@@ -91,7 +91,8 @@ class NumberPlateTextReading(Pipeline):
         model_cfg = "/workspace/mmocr/configs/textrecog/abinet/abinet256x64.py"
         self.model_cfg = model_cfg
         self.device = 'cpu'
-        backend_model = "/workspace/mmdeploy/models/mmocr/abinet/onnx/end2end.onnx"
+#         backend_model = "/workspace/mmdeploy/mmdeploy_models/abinet_orig/end2end.onnx"
+        backend_model = "/workspace/mmdeploy/mmdeploy_models/mmocr/abinet/ort/end2end.onnx"
         self.backend_model = [backend_model]
         self.deploy_cfg, self.model_cfg = load_config(self.deploy_cfg, self.model_cfg)
 
@@ -124,9 +125,10 @@ class NumberPlateTextReading(Pipeline):
         # do model inference
         with torch.no_grad():
             result = self.model.test_step(model_inputs)
+        conf = [sum(result[0].pred_text.score) / len(result[0].pred_text.score)]
         model_outputs = [result[0].pred_text.item]
-        return unzip([images, model_outputs, labels])
+        return unzip([images, model_outputs, labels, conf])
 
     def postprocess(self, inputs: Any, **postprocess_parameters: Dict) -> Any:
-        images, model_outputs, labels = unzip(inputs)
-        return unzip([model_outputs, images])
+        images, model_outputs, labels, conf = unzip(inputs)
+        return unzip([model_outputs, images, conf])

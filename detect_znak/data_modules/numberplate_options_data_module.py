@@ -43,7 +43,7 @@ class OptionsNetDataModule(pl.LightningDataModule):
                 width,
                 height,
                 batch_size,
-                [len(class_region), len(class_count_line), len(orientations)])
+                [len(class_region), len(class_count_line), len(orientations)], True)
 
         # init validation generator
         self.val = None
