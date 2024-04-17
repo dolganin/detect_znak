@@ -1,7 +1,7 @@
 # Detect Znak by IIR
 
 ### Project: 
-Sign Detection with Nomeroff-Net
+Sign Detection with detect_znak repos
 
 ### Authors:
 
@@ -33,7 +33,7 @@ pip3 install -r requirements.txt
 Inference:
 To perform inference on an image, follow the following text:
 ``` Python
-from nomeroff_net import pipeline
+from detect_znak import pipeline
 """
 На выбор из пайплайнов: 
 number_plate_classification
