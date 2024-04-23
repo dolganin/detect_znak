@@ -86,7 +86,7 @@ class NumberPlateTextReading(Pipeline):
                                        option_detector_height=option_detector_height,
                                        off_number_plate_classification=off_number_plate_classification)
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        deploy_cfg = "/workspace/mmdeploy/configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py"
+        deploy_cfg = current_dir + "/../../../mmdeploy/configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py"
         self.deploy_cfg = deploy_cfg
         model_cfg = "/workspace/mmocr/configs/textrecog/abinet/abinet256x64.py"
         self.model_cfg = model_cfg

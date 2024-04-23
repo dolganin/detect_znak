@@ -8,7 +8,6 @@ from _paths import detect_znak_dir
 from detect_znak import pipeline
 from detect_znak.tools import unzip
 from detect_znak.image_loaders import DumpyImageLoader
-from sort.sort import *
 from sort.visualize import visualize_detections
 from sort.util import get_car, read_license_plate, write_csv
 from sort.add_missing_data import interp
@@ -207,6 +206,6 @@ class Detector():
             file = "./test.csv"
         visualize_detections(file, vid)
         return results
-        
+    
     def __call__(self, rgb_img):
         return self.post_process(self.forward(rgb_img))
