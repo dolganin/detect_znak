@@ -1,4 +1,4 @@
-conda env create --name detect_znak-onnx-cpu python=3.8 -y -f environment.yaml
+conda env create --name detect_znak-onnx-cpu python=3.8 -f environment.yaml
 conda activate detect_znak-onnx-cpu
 conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 cpuonly -c pytorch
 pip install -U openmim
