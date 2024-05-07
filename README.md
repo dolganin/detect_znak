@@ -27,13 +27,13 @@ git clone https://github.com/dolganin/detect_znak.git
 
 cd detect_znak
 
-pip3 install -r requirements.txt
+. install.sh
 ```
 
 Inference:
 To perform inference on an image, follow the following text:
 ``` Python
-from nomeroff_net import pipeline
+from detect_znak import pipeline
 """
 На выбор из пайплайнов: 
 number_plate_classification
