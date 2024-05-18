@@ -3,6 +3,7 @@
 ### Project: 
 Sign Detection with Nomeroff-Net
 
+
 ### Authors:
 
 #### [dolganin](https://github.com/dolganin) 
@@ -17,7 +18,7 @@ Sign Detection with Nomeroff-Net
 # Description:
 
 This project aims to develop a system for detecting traffic signs using the Nomeroff-Net fine-tuned network. The system is currently almost finished,
-has a Telegram @CarZnak_bot
+has a Telegram **@CarZnak_bot**
 
 # Getting Started:
 
